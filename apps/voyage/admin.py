@@ -1,7 +1,8 @@
 """
 Admin panel configuration for the Voyage app.
 """
-
+from django.urls import reverse
+from django.utils.html import format_html
 from django.contrib import admin
 from django.db.models import Avg, Count
 from .models import (
@@ -13,8 +14,6 @@ from .models import (
     Assignment,
     StudentAssignment,
 )
-from django.urls import reverse
-from django.utils.html import format_html
 
 
 @admin.register(Faculty)
@@ -229,4 +228,7 @@ class StudentAssignmentAdmin(admin.ModelAdmin):
     )
 
     def student_name(self, obj):
+        """
+        returns student name
+        """
         return obj.student.user
