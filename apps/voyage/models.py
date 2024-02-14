@@ -138,11 +138,7 @@ class Course(QuxModel):
         """
         Returns a set of students associated with the course.
         """
-        stu = set()
-        for assignment in self.assignment_set.all():
-            for s in assignment.studentassignment_set.all():
-                stu.add(s.student)
-        return stu
+        return Student.objects.filter(program__assignment__course=self)
 
     def content(self):
         """

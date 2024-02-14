@@ -1,8 +1,9 @@
 """
 Admin panel configuration for the Voyage app.
 """
-from django.urls import reverse
-from django.utils.html import format_html
+
+# from django.urls import reverse
+# from django.utils.html import format_html
 from django.contrib import admin
 from django.db.models import Avg, Count
 from .models import (
@@ -103,29 +104,46 @@ class StudentAdmin(admin.ModelAdmin):
             average = submitted_assignments.aggregate(Avg("grade"))["grade__avg"]
             return round(average, 2)
         return None
-
+from django.urls import reverse
+from django.utils.html import format_html
+from django.contrib import admin
+from .models import Content, Course
 
 @admin.register(Content)
 class ContentAdmin(admin.ModelAdmin):
-    """
-    Custom admin interface for Content model.
-    """
-
     list_display = ("name", "faculty", "repo", "num_courses", "num_assignments")
-
-    list_display_links = ("name", "faculty", "repo", "num_courses", "num_assignments")
+    list_display_links = ("name", "faculty", "repo", "num_assignments")
 
     def num_courses(self, obj):
         """
-        Returns the related course(s) associated with the content.
+        Returns a link to the page showing related courses.
         """
-        return Course.objects.filter(assignment__content=obj).distinct().count()
+        count = Course.objects.filter(assignment__content=obj).distinct().count()
+        url = reverse('admin:voyage_course_changelist') + f'?content__id__exact={obj.id}'
+        return format_html('<a href="{}">{}</a>', url, count)
 
     def num_assignments(self, obj):
         """
         Returns the number of assignments associated with the content.
         """
         return obj.assignment_set.all().count()
+
+    def courses(self, obj):
+        """
+        Returns links to related courses for the content.
+        """
+        courses = obj.course_set.all()  # Assuming 'course_set' is the related manager
+        if courses:
+            links = [f'<a href="{reverse("admin:voyage_course_change", args=[course.id])}">{course}</a>' for course in courses]
+            return format_html('\n'.join(links))
+        return "No courses"
+
+    courses.allow_tags = True  # For Django versions before 2.0, use 'is_safe=True' instead
+
+    readonly_fields = ('courses',)
+
+
+
 
 
 @admin.register(Program)
