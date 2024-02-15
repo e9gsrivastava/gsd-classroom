@@ -35,7 +35,7 @@ class FacultyAdmin(admin.ModelAdmin):
         """
         Returns the number of courses taught by the faculty.
         """
-        courses = obj.programs()
+        courses = obj.courses()
         ids = [i.id for i in courses]
         if courses:
             html = '<a href="/admin/voyage/course/?id__in='
@@ -225,7 +225,7 @@ class CourseAdmin(admin.ModelAdmin):
         """
         number of assignments in each course
         """
-        assignments = obj.assignments()
+        assignments = obj.assignments
         ids = [i.id for i in assignments]
         if assignments:
             html = '<a href="/admin/voyage/assignment/?id__in='

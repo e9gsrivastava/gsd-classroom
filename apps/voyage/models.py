@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth import get_user_model
 from django.db import models
 from qux.models import QuxModel
+# import git
 
 
 class Faculty(QuxModel):
@@ -81,7 +82,7 @@ class Faculty(QuxModel):
         """
 
         return Assignment.objects.filter(content__faculty=self)
-
+    
 
 class Program(QuxModel):
     """
@@ -132,12 +133,13 @@ class Course(QuxModel):
         Returns a set of programs associated with the course.
         """
         return Program.objects.filter(assignment__course=self).distinct()
-
+    @property
     def students(self):
         """
         Returns a set of students associated with the course.
         """
         return Student.objects.filter(program__assignment__course=self)
+
 
     def content(self):
         """
@@ -145,6 +147,7 @@ class Course(QuxModel):
         """
         return Content.objects.filter(assignment__course=self).distinct()
 
+    @property
     def assignments(self):
         """
         Returns a set of assignments associated with the course.
@@ -317,6 +320,24 @@ class Assignment(QuxModel):
                 submissions_query = submissions_query.filter(grade__isnull=True)
 
         return submissions_query
+    
+    # def clone_repo_for_student(self, course_repo_url, student_username):
+    #     """
+    #     when assignment is created this will help 
+    #     """
+    #     repo = git.Repo.clone_from(course_repo_url, f'https://github.com/{student_username}/{self.content}')
+    #     return repo
+
+    # def save(self, **kwargs):
+    #     """
+    #     to save data 
+    #     """
+    #     students = Student.objects.all()
+
+    #     for student in students:
+    #         self.clone_repo_for_student(self.content.repo, student.user.username)
+
+    #     return super().save(**kwargs)
 
     @classmethod
     def create_random_assignment(cls):

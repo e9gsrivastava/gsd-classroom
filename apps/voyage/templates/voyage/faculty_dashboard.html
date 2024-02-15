@@ -1,0 +1,28 @@
+{% extends 'voyage/base.html' %}
+
+{% block content %}
+<h2>Welcome, {{ faculty.user.username }}!</h2>
+<br>
+<br>
+<h3>Data Overview:</h3>
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Course Name</th>
+                <th>Number of Students</th>
+                <th>Number of Assignments</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in courses_taught %}
+                <tr>
+                    <td>{{ course.name }}</td>
+                    <td>{{ course.students|length }}</td>
+                    <td>{{ course.assignments|length }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'voyage/base.html' %}
+
+{% block title %}Student List{% endblock %}
+
+{% block content %}
+    <h1>List of Students</h1>
+
+    <ul>
+        {% for student in students %}
+            <li><a href="{% url 'student_dashboard' student.id %}">{{ student.user }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
