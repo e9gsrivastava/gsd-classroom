@@ -1,3 +1,7 @@
+"""
+urls for voyage app
+"""
+
 from django.urls import path
 from ..views.appviews import (
     VoyageDefaultView,
@@ -18,7 +22,6 @@ urlpatterns = [
     path(
         "assignment/new/", CreateNewAssignment.as_view(), name="create_new_assignment"
     ),
-    # path('dashboard/student/<int:student_id>/', StudentDashboardView.as_view(), name='student_dashboard'),
     path(
         "dashboard/student/<int:pk>/",
         StudentDashboardView.as_view(),

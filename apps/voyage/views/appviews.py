@@ -1,12 +1,15 @@
-from django.views.generic import TemplateView
+"""
+views for voyage app
+"""
+from django.views.generic import DetailView, ListView, TemplateView
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 from django.db.models import Count, Avg
 from django.shortcuts import render
+
 from apps.voyage.models import Faculty, Student, Assignment
-from qux.seo.mixin import SEOMixin
-from django.urls import reverse_lazy
 from apps.voyage.forms import CreateCourseForm, CreateAssignmentForm
-from django.http import HttpResponseRedirect
-from django.views.generic import DetailView, ListView
+from qux.seo.mixin import SEOMixin
 
 
 class VoyageDefaultView(SEOMixin, TemplateView):
@@ -70,7 +73,8 @@ class StudentDashboardView(DetailView):
 
     def get_context_data(self, **kwargs):
         """
-        Override to add additional context data, such as the courses, assignments, grades, and submissions of the student.
+        Override to add additional context data, such as the courses,
+        assignments, grades, and submissions of the student.
         """
         context = super().get_context_data(**kwargs)
         student = self.object
