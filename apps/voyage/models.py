@@ -1,7 +1,6 @@
 """
 database tables  for voyage app
 """
-
 import random
 from datetime import datetime, timedelta
 from django.contrib.auth import get_user_model
@@ -81,7 +80,7 @@ class Faculty(QuxModel):
         returns number of assignments
         """
 
-        return self.studentassignment_set.count()
+        return Assignment.objects.filter(content__faculty=self)
 
 
 class Program(QuxModel):

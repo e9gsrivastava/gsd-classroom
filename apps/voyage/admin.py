@@ -1,11 +1,10 @@
 """
 Admin panel configuration for the Voyage app.
 """
-
-# from django.urls import reverse
-# from django.utils.html import format_html
+from django.db.models import Avg
+from django.urls import reverse
+from django.utils.html import format_html
 from django.contrib import admin
-from django.db.models import Avg, Count
 from .models import (
     Faculty,
     Content,
@@ -29,28 +28,53 @@ class FacultyAdmin(admin.ModelAdmin):
         "is_active",
         "num_courses_taught",
         "num_assignments_graded",
-    )
-
-    list_display_links = (
-        "user",
-        "github",
-        "num_courses_taught",
-        "num_assignments_graded",
+        "num_assignments_by_faculty",
     )
 
     def num_courses_taught(self, obj):
         """
         Returns the number of courses taught by the faculty.
         """
-        return len(obj.programs())
+        courses = obj.programs()
+        ids = [i.id for i in courses]
+        if courses:
+            html = '<a href="/admin/voyage/course/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(courses)}</a>')
+        return 0
+
+    num_courses_taught.short_description = "Courses Taught"
 
     def num_assignments_graded(self, obj):
         """
-        Returns the number of assignments graded by the faculty.
+        Returns number of assignments that have been graded
         """
-        return StudentAssignment.objects.filter(
-            reviewer=obj, grade__isnull=False
-        ).count()
+        assignments = obj.assignments_graded()
+        ids = [i.id for i in assignments]
+        if assignments:
+            html = '<a href="/admin/voyage/studentassignment/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(assignments)}</a>')
+
+        return 0
+
+    num_assignments_graded.short_description = "Assignments Graded"
+
+    def num_assignments_by_faculty(self, obj):
+        """
+        Returns the total number of assignments associated with the faculty.
+        """
+        assignments = obj.num_assignments()
+        ids = [a.id for a in assignments]
+        if assignments:
+            html = '<a href="/admin/voyage/assignment/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(assignments)}</a>')
+
+        return 0
 
 
 @admin.register(Student)
@@ -69,14 +93,6 @@ class StudentAdmin(admin.ModelAdmin):
         "average_grade",
     )
 
-    list_display_links = (
-        "user",
-        "program_name",
-        "num_courses_enrolled",
-        "num_assignments",
-        "average_grade",
-    )
-
     def program_name(self, obj):
         """
         Returns the name of the program in which the student is enrolled.
@@ -85,15 +101,31 @@ class StudentAdmin(admin.ModelAdmin):
 
     def num_courses_enrolled(self, obj):
         """
-        Returns the number of courses enrolled by the student.
+        number of courses each student is enrolled in
         """
-        return len(obj.courses())
+        courses = obj.courses()
+        ids = [i.id for i in courses]
+        if courses:
+            html = '<a href="/admin/voyage/course/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(courses)}</a>')
+
+        return 0
 
     def num_assignments(self, obj):
         """
-        num of assignments
+        number of assignments assigned to the student
         """
-        return obj.assignments().count()
+        assignments = obj.assignments()
+        ids = [i.id for i in assignments]
+        if assignments:
+            html = '<a href="/admin/voyage/assignment/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(assignments)}</a>')
+
+        return 0
 
     def average_grade(self, obj):
         """
@@ -104,46 +136,43 @@ class StudentAdmin(admin.ModelAdmin):
             average = submitted_assignments.aggregate(Avg("grade"))["grade__avg"]
             return round(average, 2)
         return None
-from django.urls import reverse
-from django.utils.html import format_html
-from django.contrib import admin
-from .models import Content, Course
+
 
 @admin.register(Content)
 class ContentAdmin(admin.ModelAdmin):
+    """
+    class content methods
+    """
     list_display = ("name", "faculty", "repo", "num_courses", "num_assignments")
-    list_display_links = ("name", "faculty", "repo", "num_assignments")
 
     def num_courses(self, obj):
         """
-        Returns a link to the page showing related courses.
+        number of courses that use each content
         """
-        count = Course.objects.filter(assignment__content=obj).distinct().count()
-        url = reverse('admin:voyage_course_changelist') + f'?content__id__exact={obj.id}'
-        return format_html('<a href="{}">{}</a>', url, count)
+        assignments = obj.assignment_set.all()
+        courses = set(i.course for i in assignments)
+        ids = [i.id for i in courses]
+        if courses:
+            html = '<a href="/admin/voyage/course/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(courses)}</a>')
+
+        return 0
 
     def num_assignments(self, obj):
         """
-        Returns the number of assignments associated with the content.
+        number of assignments that use each content
         """
-        return obj.assignment_set.all().count()
+        assignments = obj.assignment_set.all()
+        ids = [i.id for i in assignments]
+        if assignments:
+            html = '<a href="/admin/voyage/assignment/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(assignments)}</a>')
 
-    def courses(self, obj):
-        """
-        Returns links to related courses for the content.
-        """
-        courses = obj.course_set.all()  # Assuming 'course_set' is the related manager
-        if courses:
-            links = [f'<a href="{reverse("admin:voyage_course_change", args=[course.id])}">{course}</a>' for course in courses]
-            return format_html('\n'.join(links))
-        return "No courses"
-
-    courses.allow_tags = True  # For Django versions before 2.0, use 'is_safe=True' instead
-
-    readonly_fields = ('courses',)
-
-
-
+        return 0
 
 
 @admin.register(Program)
@@ -154,23 +183,34 @@ class ProgramAdmin(admin.ModelAdmin):
 
     list_display = ("name", "num_courses", "num_students")
 
-    list_display_links = ("name", "num_courses", "num_students")
-
     def num_courses(self, obj):
         """
-        Returns the number of courses associated with the program.
+        number of courses in each program
         """
-        return (
-            obj.assignment_set.values("course")
-            .annotate(course_count=Count("course"))
-            .count()
-        )
+        assignments = obj.assignment_set.all()
+        courses = set(i.course for i in assignments)
+        ids = [i.id for i in courses]
+        if courses:
+            html = '<a href="/admin/voyage/course/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(courses)}</a>')
+
+        return 0
 
     def num_students(self, obj):
         """
-        Returns the number of students enrolled in the program.
+        number of students in each program
         """
-        return obj.student_set.count()
+        students = obj.students()
+        ids = [i.id for i in students]
+        if students:
+            html = '<a href="/admin/voyage/student/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(students)}</a>')
+
+        return 0
 
 
 @admin.register(Course)
@@ -181,24 +221,43 @@ class CourseAdmin(admin.ModelAdmin):
 
     list_display = ("name", "num_assignments", "num_completed_assignments")
 
-    list_display_links = ("name", "num_assignments", "num_completed_assignments")
-
     def num_assignments(self, obj):
         """
-        Returns the number of assignments associated with the course.
+        number of assignments in each course
         """
-        return obj.assignment_set.count()
+        assignments = obj.assignments()
+        ids = [i.id for i in assignments]
+        if assignments:
+            html = '<a href="/admin/voyage/assignment/?id__in='
+            for i in ids:
+                html = "".join((html, f"{i},"))
+            return format_html(html[:-1] + f'">{len(assignments)}</a>')
+
+        return 0
 
     def num_completed_assignments(self, obj):
         """
-        Returns the number of completed assignments (graded 100%) associated with the course.
+        Number of assignments that are completed and graded 100%.
         """
         assignments = obj.assignment_set.all()
-        c = 0
+        max_grade = 100.0
+        graded_assignments = set()
+
         for assignment in assignments:
-            # c += len(assignment.studentassignment_set.filter(grade=100.0))
-            c += len(assignment.studentassignment_set.filter(grade__gte=40))
-        return c
+            graded_assignments.update(
+                assignment.studentassignment_set.filter(grade__gte=max_grade)
+            )
+
+        count = len(graded_assignments)
+
+        if count:
+            url = (
+                reverse("admin:voyage_studentassignment_changelist")
+                + f'?id__in={",".join(map(str, graded_assignments.values_list("id", flat=True)))}'
+            )
+            return format_html('<a href="{}">{}</a>', url, count)
+
+        return 0
 
 
 @admin.register(Assignment)
