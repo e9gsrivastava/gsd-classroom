@@ -4,14 +4,17 @@
 
 {% block content %}
     <div class="container mt-4">
-        <h2 class="mb-4">Welcome, {{ student.user.username }}!</h2>
+        <div style="text-align: center;">
+            <h2 class="mb-4">Welcome, {{ student.user.username }}!</h2>
+        </div>
+        
+        
+        <br>
+        <br>
+        <div class="d-flex justify-content-center align-item-center" >
 
-        <div class="row">
-            <div class="col-md-4">
-            </div>
-
-            <div class="col-md-4">
-                <h2>Number of Assignments in Each Course:</h2>
+            <div class="col-md-4 m-2 border border-dark p-2">
+                <h3>Number of Assignments in Each Course:</h3>
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -30,8 +33,8 @@
                 </table>
             </div>
 
-            <div class="col-md-4">
-                <h2>Average Grade for Each Assignment:</h2>
+            <div class="col-md-4 m-2 border border-dark p-2">
+                <h3>Average Grade for Each Assignment:</h3>
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -50,8 +53,8 @@
                 </table>
             </div>
 
-            <div class="col-md-4">
-                <h2>Number of Submissions for Each Assignment:</h2>
+            <div class="col-md-4 m-2 border border-dark p-2">
+                <h3>Number of Submissions for Each Assignment:</h3>
                 <table class="table table-striped">
                     <thead>
                         <tr>
